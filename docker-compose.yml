@@ -221,5 +221,10 @@ services:
   
 networks:
   decentraland:
-    external: true
     name: decentraland-project
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.100.0/24  # Custom IP range
+          gateway: 192.168.100.1     # Custom gateway
