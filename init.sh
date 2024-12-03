@@ -24,14 +24,14 @@ leCertEmit () {
   echo " Creating dummy certificate for $nginx_url..."
   path="/etc/letsencrypt/live/$nginx_url"
   mkdir -p "$data_path/conf/live/$nginx_url"
-  docker-compose run --rm --entrypoint "\
+  docker compose run --rm --entrypoint "\
     openssl req -x509 -nodes -newkey rsa:1024 -days 1\
       -keyout '$path/privkey.pem' \
       -out '$path/fullchain.pem' \
       -subj '/CN=localhost'" certbot
 
   echo -n "## Starting nginx ..."
-  docker-compose -f docker-compose.yml -f "platform.$(uname -s).yml" up --remove-orphans --force-recreate -d nginx
+  docker compose -f docker-compose.yml -f "platform.$(uname -s).yml" up --remove-orphans --force-recreate -d nginx
 
   if test $? -ne 0; then
     echo -n "Failed to start nginx...  "
@@ -43,7 +43,7 @@ leCertEmit () {
   fi
 
     echo -n "## Deleting dummy certificate for $nginx_url ..."
-    docker-compose run --rm --entrypoint "\
+    docker compose run --rm --entrypoint "\
             rm -Rf /etc/letsencrypt/live/$nginx_url && \
             rm -Rf /etc/letsencrypt/archive/$nginx_url && \
             rm -Rf /etc/letsencrypt/renewal/$nginx_url.conf" certbot
@@ -90,7 +90,7 @@ leCertEmit () {
           fi
         done
 
-        docker-compose run --rm --entrypoint "\
+        docker compose run --rm --entrypoint "\
             certbot certonly --webroot -w /var/www/certbot \
             --no-eff-email \
             $staging_arg \
@@ -110,7 +110,7 @@ leCertEmit () {
         fi
 
         echo "## Reloading nginx ..."
-        docker-compose restart nginx
+        docker compose restart nginx
         if test $? -ne 0; then
             echo -n "Failed to reload nginx... "
             printMessage failed
@@ -122,7 +122,7 @@ leCertEmit () {
 
         echo "## Going for the real certs..."
 
-        docker-compose run --rm --entrypoint "\
+        docker compose run --rm --entrypoint "\
         certbot certonly --webroot -w /var/www/certbot \
             $email_arg \
             $domain_args \
@@ -142,7 +142,7 @@ leCertEmit () {
 
 
         echo "## Reloading nginx with real certs..."
-        docker-compose restart nginx
+        docker compose restart nginx
         if test $? -ne 0; then
             echo -n "Failed to reload nginx... "
             printMessage failed
@@ -247,8 +247,8 @@ echo ""
 echo "Starting in ${SLEEP_TIME} seconds... " && sleep "$SLEEP_TIME"
 
 # Check if docker compose is installed
-if ! [ -x "$(command -v docker-compose)" ]; then
-  echo -n "Error: docker-compose is not installed..." >&2
+if ! [ -x "$(command -v docker)" ]; then
+  echo -n "Error: docker compose is not installed..." >&2
   printMessage failed
   exit 1
 fi
@@ -308,7 +308,7 @@ if [ -z "$POSTGRES_PASSWORD" ]; then
   exit 1
 fi
 
-docker-compose pull "nginx"
+docker compose pull "nginx"
 if [ $? -ne 0 ]; then
   echo -n "Failed to pull nginx"
   printMessage failed
@@ -335,7 +335,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-docker-compose stop nginx
+docker compose stop nginx
 if [ $? -ne 0 ]; then
   echo -n "Failed to stop nginx! "
   printMessage failed
@@ -389,12 +389,12 @@ if test $matches -eq 0; then
 fi
 
 echo "## Restarting containers... "
-docker-compose down
+docker compose down
 if test ${MAINTENANCE_MODE} -eq 1; then
   echo 'Running maintenance...'
-  docker-compose -f docker-compose-maintenance.yml up -d
+  docker compose -f docker-compose-maintenance.yml up -d
 else
-  docker-compose -f docker-compose.yml -f "platform.$(uname -s).yml" up --remove-orphans -d nginx
+  docker compose -f docker-compose.yml -f "platform.$(uname -s).yml" up --remove-orphans -d nginx
   if test $? -ne 0; then
     echo -n "Failed to start catalyst node"
     printMessage failed

@@ -1,11 +1,8 @@
-version: "3"
-
 volumes:
   content_server_storage: {}
   nginx_storage: {}
   lambdas_server_storage: {}
   shared_keys:
-
 
 services:
   postgres:
@@ -27,8 +24,12 @@ services:
     command: custom-entrypoint.sh -c config_file=/etc/postgresql/postgresql.conf
     logging:
       driver: syslog
-      options: { tag: postgres }
-
+      options: 
+        tag: postgres 
+        syslog-address: "udp://192.168.100.2:514"
+    networks:
+      - decentraland
+  
   postgres-exporter:
     image: quay.io/prometheuscommunity/postgres-exporter
     container_name: postgres-exporter
@@ -44,7 +45,11 @@ services:
     shm_size: 512mb
     logging:
       driver: syslog
-      options: { tag: postgres-exporter }
+      options: 
+        tag: postgres-exporter 
+        syslog-address: "udp://192.168.100.2:514"
+    networks:
+      - decentraland
 
   node-exporter:
     image: quay.io/prometheus/node-exporter:latest
@@ -61,7 +66,11 @@ services:
       - "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)"
     logging:
       driver: syslog
-      options: { tag: node-exporter }
+      options: 
+        tag: node-exporter 
+        syslog-address: "udp://192.168.100.2:514"
+    networks:
+      - decentraland
 
   content-server:
     image: quay.io/decentraland/catalyst:${DOCKER_TAG:-latest}
@@ -87,7 +96,11 @@ services:
       - "${CONTENT_SERVER_STORAGE}:/app/storage/content_server/"
     logging:
       driver: syslog
-      options: { tag: content-server }
+      options: 
+        tag: content-server
+        syslog-address: "udp://192.168.100.2:514"
+    networks:
+      - decentraland
 
   lambdas:
     image: quay.io/decentraland/catalyst:${DOCKER_TAG:-latest}
@@ -106,9 +119,13 @@ services:
       - "7070"
     logging:
       driver: syslog
-      options: { tag: lambdas }
+      options: 
+        tag: lambdas 
+        syslog-address: "udp://192.168.100.2:514"
     volumes:
       - "lambdas_server_storage:/app/storage/lambdas"
+    networks:
+      - decentraland
 
   lamb2:
     image: quay.io/decentraland/lamb2:${LAMB2_DOCKER_TAG:-latest}
@@ -130,11 +147,16 @@ services:
       - "7272"
     logging:
       driver: syslog
-      options: { tag: lamb2 }
+      options: 
+        tag: lamb2
+        syslog-address: "udp://192.168.100.2:514"
+    networks:
+      - decentraland
 
   cadvisor:
     image: gcr.io/google_containers/cadvisor:v0.35.0
     container_name: cadvisor
+    privileged: true
     command: --docker_only=true --disable_root_cgroup_stats=true
     restart: always
     volumes:
@@ -143,10 +165,14 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
+    devices: 
+      - "/dev/kmsg"
     depends_on:
       - content-server
       - lambdas
-
+    networks:
+      - decentraland
+      
   nginx:
     container_name: nginx
     image: nginx:1.22-alpine
@@ -174,7 +200,11 @@ services:
       - certbot
     logging:
       driver: syslog
-      options: { tag: nginx }
+      options: 
+        tag: nginx 
+        syslog-address: "udp://192.168.100.2:514"
+    networks:
+      - decentraland
 
   certbot:
     image: certbot/certbot
@@ -186,3 +216,10 @@ services:
     logging:
       driver: syslog
       options: { tag: certbot }
+    networks:
+      - decentraland
+  
+networks:
+  decentraland:
+    external: true
+    name: decentraland-project
