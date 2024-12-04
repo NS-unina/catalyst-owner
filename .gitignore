@@ -8,5 +8,7 @@ local/nginx/conf.d/00-katalyst.conf
 docker-compose.yml.bak
 storage
 
+single-node/config/wazuh_indexer_ssl_certs/
+
 database
 contents

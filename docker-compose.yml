@@ -28,7 +28,8 @@ services:
         tag: postgres 
         syslog-address: "udp://192.168.100.2:514"
     networks:
-      - decentraland
+      decentraland:
+        ipv4_address: 192.168.100.10
   
   postgres-exporter:
     image: quay.io/prometheuscommunity/postgres-exporter
@@ -49,7 +50,8 @@ services:
         tag: postgres-exporter 
         syslog-address: "udp://192.168.100.2:514"
     networks:
-      - decentraland
+      decentraland:
+        ipv4_address: 192.168.100.11
 
   node-exporter:
     image: quay.io/prometheus/node-exporter:latest
@@ -70,7 +72,8 @@ services:
         tag: node-exporter 
         syslog-address: "udp://192.168.100.2:514"
     networks:
-      - decentraland
+      decentraland:
+        ipv4_address: 192.168.100.12
 
   content-server:
     image: quay.io/decentraland/catalyst:${DOCKER_TAG:-latest}
@@ -100,7 +103,8 @@ services:
         tag: content-server
         syslog-address: "udp://192.168.100.2:514"
     networks:
-      - decentraland
+      decentraland:
+        ipv4_address: 192.168.100.13
 
   lambdas:
     image: quay.io/decentraland/catalyst:${DOCKER_TAG:-latest}
@@ -125,7 +129,8 @@ services:
     volumes:
       - "lambdas_server_storage:/app/storage/lambdas"
     networks:
-      - decentraland
+      decentraland:
+        ipv4_address: 192.168.100.14
 
   lamb2:
     image: quay.io/decentraland/lamb2:${LAMB2_DOCKER_TAG:-latest}
@@ -151,7 +156,8 @@ services:
         tag: lamb2
         syslog-address: "udp://192.168.100.2:514"
     networks:
-      - decentraland
+      decentraland:
+        ipv4_address: 192.168.100.15
 
   cadvisor:
     image: gcr.io/google_containers/cadvisor:v0.35.0
@@ -171,7 +177,8 @@ services:
       - content-server
       - lambdas
     networks:
-      - decentraland
+      decentraland:
+        ipv4_address: 192.168.100.16
       
   nginx:
     container_name: nginx
@@ -204,7 +211,8 @@ services:
         tag: nginx 
         syslog-address: "udp://192.168.100.2:514"
     networks:
-      - decentraland
+      decentraland:
+        ipv4_address: 192.168.100.17
 
   certbot:
     image: certbot/certbot
@@ -222,9 +230,4 @@ services:
 networks:
   decentraland:
     name: decentraland-project
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 192.168.100.0/24  # Custom IP range
-          gateway: 192.168.100.1     # Custom gateway
+    external: true
