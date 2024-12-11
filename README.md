@@ -25,3 +25,19 @@ $ docker-compose up
 $ docker-compose up -d
 ```
 
+# Instanziazione del Nodo Catalist
+
+Per instazionare il nodo catalyst è necessario lanciare lo script init.sh presente all'interno di questa directory
+```
+$ ./init.sh
+```
+
+Per installare gli agent è necessario eseguire i seguenti comandi all'interno della directory wazuh-agent
+```
+$ docker cp <so>-agent.sh <nome_container>:/root/
+$ docker exec -ti <nome_container> bash
+# cd root
+# ./<so>-agent.s
+```
+
+N.B. Si deve scegliere l'opportuno script in base al tipo di container in cui si instanzia l'immagine.
